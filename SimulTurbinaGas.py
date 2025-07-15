@@ -3,21 +3,19 @@ from IOdelPLC import EntradasPlc, SalidasPlc
 from ExcepcionesTurbina import ParadaDeTurbina1
 
     
+    
 class Turbina():
     # Rango de Velocidad de la Turbima en [rpm]
     velTurbRpmMin = 0
     velTurbRpmMax = 6000 
    
     vel_turb_rpm = 0.0
-    ent = EntradasPlc()
-    
-    sal = SalidasPlc()
-    
+        
     
     def __init__(self):
         #self.paso1 = self.paso2 = self.paso3 = self.paso4 = False                                           
-        self.ent.entradas
-        self.sal.salidas
+        self.ent = EntradasPlc()
+        self.sal = SalidasPlc()
         self.Man_Auto = False
         self.friccion = 2.5               # Frenado por inercia en la turbina 2.5 rpm
         self.inputs_criticas = False
@@ -32,28 +30,35 @@ class Turbina():
     def update(self):
        
         try:
+            # Seguridades
             
-            while self.ent.entradas["p_valPpalAbi"] == False:   #  valvula ppal. cerrada
-                
-                print ("valvula Ppal. cerrada \n")
-                print (" pulsar p_valPpalAbi Para abrir la valvula \n")
-                baseDeTiempo.sleep(1)
-                
-                self.modificar_ent()
-                
-                #print(self.ent.entradas["p_valPpalAbi"]) 
-                
+            """ self.inputs_criticas1 = self.inputs_criticas and self.ent.entradas.get("p_paradaTur")
+            self.inputs_criticas2 = self.inputs_criticas1 and  self.sal.salidas.get("frenos") and self.ent.entradas.get("sensor_freno") 
+            self.inputs_criticas3 = self.inputs_criticas2 and self.ent.entradas.get("sensor_Q1")and self.ent.entradas.get("sensor_Q2")"""
+            
+            if self.ent.entradas.get("pE_SControl") and self.ent.entradas.get("pE_Remota") and self.ent.entradas.get("p_valPpalAbi") and self.ent.entradas.get("p_paradaTur"):
+            
+                print("Valvula Ppal. abierta \n")
                 self.ent.entradas["sensor_valvppal"] = True
-                baseDeTiempo.sleep(1)
-                if self.ent.entradas["sensor_valvppal"] == True:
-                    break
-                    
-            # Seguridades    
+            else:    
             
-            self.inputs_criticas = self.ent.entradas["pE_SControl"] and self.ent.entradas["pE_Remota"] and self.ent.entradas["sensor_valvppal"]
-            self.inputs_criticas1 = self.inputs_criticas and self.ent.entradas["p_paradaTur"]
-            self.inputs_criticas2 = self.inputs_criticas1 and  self.sal.salidas["frenos"] and self.ent.entradas["sensor_freno"] 
-            self.inputs_criticas3 = self.inputs_criticas2 and self.ent.entradas["sensor_Q1"] and self.ent.entradas["sensor_Q2"]
+                while self.ent.entradas.get("p_valPpalAbi") == False and self.ent.entradas.get("pE_SControl") and self.ent.entradas.get("pE_Remota") and self.ent.entradas.get("p_paradaTur"):   #  valvula ppal. cerrada
+                    
+                    print ("valvula Ppal. cerrada \n")
+                    print (" pulsar p_valPpalAbi Para abrir la valvula \n")
+                    baseDeTiempo.sleep(1)
+                    
+                    self.modificar_ent()
+                    
+                    #print(self.ent.entradas["p_valPpalAbi"]) 
+                    
+                    self.ent.entradas["sensor_valvppal"] = True
+                    baseDeTiempo.sleep(1)
+                    if self.ent.entradas.get("sensor_valvppal") == True:
+                        break
+                    
+                
+            
             """
                 PASO 1:
                 Para el arranque con la turbina completamente detenida, se utiliza un motor auxiliar, que se acopla 
@@ -62,29 +67,30 @@ class Turbina():
                 se puede ejecutar el arranque.   
                 
             """
+            self.inputs_criticas = self.ent.entradas.get("pE_SControl") and self.ent.entradas.get("pE_Remota") and self.ent.entradas.get("sensor_valvppal")
             
             if self.inputs_criticas:
-                vel_turb_rpm = self.ent.entradas["sensor_velTur"]
-                if  self.ent.entradas["p_paradaTur"] == False:
+                vel_turb_rpm = self.ent.entradas.get("sensor_velTur")
+                if  self.ent.entradas.get("p_paradaTur") == False:
                         self.parada_controlada()
                 if vel_turb_rpm <= 0.0 and self.inputs_criticas :
                     
                     
                     print("Comienza el ciclo de encendido de la Turbina : self.paso1 \n")
                     
-                    while self.ent.entradas["p_marchaTur"] == False:
+                    while self.ent.entradas.get("p_marchaTur") == False:
                         print("Pulsar p_marchaTur para iniciar el arranque de la Turbina \n")
                         self.modificar_ent()
-                        if self.ent.entradas["p_marchaTur"] or self.ent.entradas["p_paradaTur"] == True:
+                        if self.ent.entradas.get("p_marchaTur") or self.ent.entradas.get("p_paradaTur") == True:
                             break
                         
                         baseDeTiempo.sleep(1)
-                    if self.ent.entradas["p_marchaTur"]:     # inicia la secuencia de arranque de la turbina
+                    if self.ent.entradas.get("p_marchaTur"):     # inicia la secuencia de arranque de la turbina
                         
                         print("Ponemos en modo manual el control de velocidad")
                         
                         self.Man_Auto  = False                      # control de la valvula de combustible en manual
-                        self.inputs_criticas1 = self.inputs_criticas and self.ent.entradas["p_paradaTur"] 
+                        self.inputs_criticas1 = self.inputs_criticas and self.ent.entradas.get("p_paradaTur") 
                         if self.inputs_criticas1:
                              
                             print("Liberamos el freno de la Turbina")
@@ -101,9 +107,9 @@ class Turbina():
                             
                             raise ParadaDeTurbina1("Parada de la Turbina , por Falla de ent.entradas criticas 1")
                         
-                        if self.ent.entradas["sensor_freno"]  and self.inputs_criticas1:
+                        if self.ent.entradas.get("sensor_freno")  and self.inputs_criticas1:
                                 baseDeTiempo.sleep(1)                               # aseguramos que la turbina no esté frenada  
-                                self.inputs_criticas2 = self.inputs_criticas1 and  self.sal.salidas["frenos"] and self.ent.entradas["sensor_freno"] 
+                                self.inputs_criticas2 = self.inputs_criticas1 and  self.sal.salidas.get("frenos") and self.ent.entradas.get("sensor_freno") 
                                 if self.inputs_criticas2: 
                                     
                                     print("Acoplamos el motor auxiliar al eje y lo activamos")
@@ -143,11 +149,11 @@ class Turbina():
                             
                             raise ParadaDeTurbina1("Parada de la Turbina , por Turbina Frenada o Falla de entrada critica1")
                     
-                    elif  self.ent.entradas["p_paradaTur"] == True:
+                    elif  self.ent.entradas.get("p_paradaTur") == True:
                         self.parada_controlada()
             
                 
-                if vel_turb_rpm >= 478.0 and vel_turb_rpm < 2750.0 and self.inputs_criticas2 and not self.ent.entradas["sensor_Q1"] and not self.ent.entradas["sensor_Q2"]:
+                if vel_turb_rpm >= 478.0 and vel_turb_rpm < 2750.0 and self.inputs_criticas2 and not self.ent.entradas.get("sensor_Q1")and not self.ent.entradas.get("sensor_Q2"):
                     """PASO 2:   
                         Una vez alcanzada la auto sustentación, se habilitan los chisperos y luego de 2 segundos se comanda el 
                         control de velocidad en MANUAL, abriendo la válvula de control de combustible un 10%, el cual 
@@ -171,10 +177,10 @@ class Turbina():
                     
                     print("Se detecta llama ==> Quemadores encendidos")
                     
-                    self.ent.entradas["sensor_Q1"]= True
-                    self.ent.entradas["sensor_Q2"]= True
+                    self.ent.entradas["sensor_Q1"] = True
+                    self.ent.entradas["sensor_Q2"] = True
                     
-                    self.inputs_criticas3 = self.inputs_criticas2 and self.ent.entradas["sensor_Q1"] and self.ent.entradas["sensor_Q2"]
+                    self.inputs_criticas3 = self.inputs_criticas2 and self.ent.entradas.get("sensor_Q1")and self.ent.entradas.get("sensor_Q2")
                     
                 if vel_turb_rpm >= 478.0 and vel_turb_rpm < 2750.0 and self.inputs_criticas3:
                     
@@ -241,7 +247,8 @@ class Turbina():
                     raise ParadaDeTurbina1("Parada de la Turbina , por falla de ent.entradas criticas 2 ")  
             
             else:
-                raise ParadaDeTurbina1("Parada de la Turbina , por falla de ent.entradas criticas")
+                
+                raise ParadaDeTurbina1("Parada de la Turbina , por falla de ent.entradas criticas====))")
         
         except ParadaDeTurbina1 as e:
             print(e)
@@ -258,7 +265,7 @@ class Turbina():
             print("***************************************")
             print("")
             print("")
-            if type(self.ent.entradas[entrada]) == float:
+            if type(self.ent.entradas.get(entrada)) == float:
                 nuevo_valor = float(input(f" Nuevo valor de {entrada}: ") )
                 self.ent.entradas.update({entrada : nuevo_valor}) 
                 print("********************************")
@@ -266,8 +273,8 @@ class Turbina():
                 print("********************************")
                 
                      
-            elif type(self.ent.entradas[entrada]) == bool:
-                if self.ent.entradas[entrada] == True:
+            elif type(self.ent.entradas.get(entrada)) == bool:
+                if self.ent.entradas.get(entrada) == True:
                     self.ent.entradas.update({entrada : False})
                     print("********************************")
                     print("Entrada modificada con exito")
@@ -292,6 +299,10 @@ class Turbina():
         self.ent.entradas["sp_VComb"] = 0.0
         self.ent.entradas["sensr_Q1"] = False
         self.ent.entradas["sensr_Q2"] = False
+        self.sal.salidas["valvula_combustible"] = self.ent.entradas["sp_VComb"]
+        self.sal.salidas["valvulaEscape"] = True
+        baseDeTiempo.sleep(5)
+        self.sal.salidas["valvulaPpal"] = False
         while True:
             baseDeTiempo.sleep(1)   
             vel_turb_rpm = vel_turb_rpm - self.friccion - self.carga_compresor
@@ -389,6 +400,9 @@ class Turbina():
                 # Si estamos en modo "Manual", la válvula se pone en la posición que definimos en el setpoint.
                 self.Valvula = SetpointMan
     
+    def __str__(self):
+        for llave, valor in self.ent.entradas.items():
+            print(f" *Entrada : {llave}          *Estado :   {valor}")
 
 
 
