@@ -7,22 +7,34 @@ from SimulTurbinaGas import Turbina
 print ("comienzo de programa")
 
  
-entradas = EntradasPlc()
-salidas = SalidasPlc()
+#entradas = EntradasPlc()
+#salidas = SalidasPlc()
 tur = Turbina()
 
 try:
     print ("programa on")
     while True:
-        print(entradas.__str__())
+        
+        """print(tur.__str__())
+        
+        while baseDeTiempo.sleep(10) == False:
+            tur.modificar_ent()
+            baseDeTiempo.sleep(1)"""    
+        
+        print("***************************************")
+        print("Modificacion de entradas")
+        a = 0
+        while a < 1 :
+            tur.modificar_ent()
+            a += 1
+        
+        
+        print("***************************************")
         
         tur.update()
         
-        baseDeTiempo.sleep(1)
-        """a = 0
-        while a < 1 :
-            tur.modificar_ent()
-            a += 1"""
+        baseDeTiempo.sleep(15)
+        
         
         
 except KeyboardInterrupt:
