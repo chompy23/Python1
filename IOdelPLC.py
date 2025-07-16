@@ -3,9 +3,7 @@ import time as basedetiempo
 class EntradasPlc():
     def __init__(self):
         # entradas
-        """pE_SControl = pE_Remota = p_valPpalAbi = p_marchaTur = p_paradaTur = sel_loc_rem = sensor_freno = sensor_Q1 = sensor_Q2 = sensr_QEmer = sensor_valvppal = False
-        sp_VComb = sp_Vel_Tur = sensor_Tq = sensor_preCom = sensor_velTur = 0.0"""
-    
+            
         self.entradas = {
         "pE_SControl" : True,  
         "pE_Remota" : True,

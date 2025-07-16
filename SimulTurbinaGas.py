@@ -149,7 +149,10 @@ class Turbina():
                             
                             raise ParadaDeTurbina1("Parada de la Turbina , por Turbina Frenada o Falla de entrada critica1")
                     
-                    elif  self.ent.entradas.get("p_paradaTur") == True:
+                    elif  self.ent.entradas.get("p_paradaTur") == False:
+                        print("Parada de la Turbina , por pulsar p_paradaTur")
+                        self.ent.entradas["p_paradaTur"] = True
+                        self.ent.entradas["p_marchaTur"] = False
                         self.parada_controlada()
             
                 
@@ -211,7 +214,7 @@ class Turbina():
                                 print(round(self.ent.entradas["sensor_velTur"] , 2))
 
                         
-                if vel_turb_rpm >= 2750 and self.inputs_criticas3 :
+                if vel_turb_rpm >= 2750 and self.inputs_criticas3 == True and self.ent.entradas.get("sensor_Q1") == True and self.ent.entradas.get("sensor_Q2") == True and self.ent.entradas.get("p_paradaTur") == True:
                     """PASO 4:   
                         Al superar las 2750 rpm, se habilita el control externo en modo automático, con una consigna de 4600 
                         rpm."""
@@ -222,14 +225,18 @@ class Turbina():
                     self.sal.salidas["juntaNeumat"] = False
                     baseDeTiempo.sleep(5)
                     self.sal.salidas["motorAux"] = False
+                    print("Motor auxiliar desacoplado")
+                    print("Se habilita el control externo en modo automatico")
                     self.Man_Auto = True
+                    print("Se establece la consigna de 4600 rpm")
                     self.ent.entradas["sp_Vel_Tur"] = 4600
                     
                     """elif not self.inputs_criticas3 :
                         self.parada()                            
                         raise ParadaDeTurbina1("Parada de la Turbina , por Falla de ent.entradas criticas 3")"""
                             
-                        
+                elif vel_turb_rpm >= 2750.0 :
+                    self.parada()        
 
                 else:
                     
@@ -239,7 +246,7 @@ class Turbina():
                         self.sal.salidas["frenos"] = True
                         baseDeTiempo.sleep(5)
                         self.sal.salidas["frenos"] = False
-                        
+                        self.parada()                    
                         
                     elif vel_turb_rpm > 478.0:
                         self.parada()
@@ -247,8 +254,8 @@ class Turbina():
                     raise ParadaDeTurbina1("Parada de la Turbina , por falla de ent.entradas criticas 2 ")  
             
             else:
-                
-                raise ParadaDeTurbina1("Parada de la Turbina , por falla de ent.entradas criticas====))")
+                self.parada()
+                raise ParadaDeTurbina1("Parada de la Turbina , por falla de ent.entradas criticas)")
         
         except ParadaDeTurbina1 as e:
             print(e)
@@ -300,18 +307,23 @@ class Turbina():
         self.ent.entradas["sensr_Q1"] = False
         self.ent.entradas["sensr_Q2"] = False
         self.sal.salidas["valvula_combustible"] = self.ent.entradas["sp_VComb"]
-        self.sal.salidas["valvulaEscape"] = True
+        
         baseDeTiempo.sleep(5)
         self.sal.salidas["valvulaPpal"] = False
+        vel_turb_rpm = self.ent.entradas.get("sensor_velTur")
         while True:
             baseDeTiempo.sleep(1)   
-            vel_turb_rpm = vel_turb_rpm - self.friccion - self.carga_compresor
+            vel_turb_rpm = vel_turb_rpm - self.friccion - self.carga_compresor 
+            self.ent.entradas["sensor_velTur"] = vel_turb_rpm
+            print(round(self.ent.entradas.get("sensor_velTur") , 2))
             if vel_turb_rpm < 2500:
                 break 
         self.sal.salidas["frenos"] = True
         while True:
             baseDeTiempo.sleep(1)   
-            vel_turb_rpm = vel_turb_rpm - self.friccion
+            vel_turb_rpm = vel_turb_rpm - self.friccion - self.carga_compresor - 50.0
+            self.ent.entradas["sensor_velTur"] = vel_turb_rpm
+            print(round(self.ent.entradas.get("sensor_velTur") , 2))
             if vel_turb_rpm <= 0.0:
                 break
         
@@ -324,13 +336,23 @@ class Turbina():
         self.sal.salidas["ignitorEmerg"] = True
         baseDeTiempo.sleep(5)
         self.ent.entradas["sensr_QEmer"] = True
-        if self.ent.entradas["sensr_QEmer"] :
+        vel_turb_rpm = self.ent.entradas.get("sensor_velTur")
+        if self.ent.entradas.get("sensr_QEmer") == True:
             self.sal.salidas["ignitorEmerg"] = False
-            self.sal.salidas["frenos"] = True  
+              
             baseDeTiempo.sleep(30)
             self.sal.salidas["valvulaEscape"] = False
             self.ent.entradas["sensr_QEmer"] = False
-        
+            
+        while True:
+            baseDeTiempo.sleep(1)   
+            vel_turb_rpm = vel_turb_rpm - self.friccion - self.carga_compresor - 50.0
+            self.ent.entradas["sensor_velTur"] = vel_turb_rpm
+            print(round(self.ent.entradas.get("sensor_velTur") , 2))
+            if vel_turb_rpm <= 0.0:
+                self.sal.salidas["frenos"] = True
+                baseDeTiempo.sleep(5)
+                break
             
             
         print ("Turbina Parada")
