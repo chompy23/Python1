@@ -165,7 +165,7 @@ try:
         x_data = []
         y_data = []
         plt.style.use('_mpl-gallery')
-        fig, ax = plt.subplots(1, 1, figsize=(10, 5))
+        fig, ax = plt.subplots(1, 1, figsize=(11, 6))
         line, = ax.plot([], [], 'r-')
         ax.xaxis.set_minor_locator(ticker.AutoMinorLocator())
         ax.yaxis.set_minor_locator(ticker.AutoMinorLocator())
@@ -177,17 +177,19 @@ try:
         # marcas de velocidad
         ax.axhline(y=480, color="black", linestyle="--")
         ax.text(0, 480, "Vel. de autosust.", color="blue", fontsize=10, verticalalignment='bottom', horizontalalignment='left')
-        ax.text(0, 480, "480  ", color="blue", fontsize=10, verticalalignment='center', horizontalalignment='right')
+        
         ax.axhline(y=2500, color="black", linestyle=":")
         ax.text(0, 2500, "En Parada; aplico frenos", color="gray", fontsize=10, verticalalignment='top', horizontalalignment='left')
-        ax.text(0, 2500, "2500  ", color="gray", fontsize=10, verticalalignment='center', horizontalalignment='right')
+        
         ax.axhline(y=2750, color="black", linestyle="--")
         ax.text(0, 2750, "Paso a control automático", color="black", fontsize=10, verticalalignment='bottom', horizontalalignment='left')
-        ax.text(0, 2750, "2750  ", color="black", fontsize=10, verticalalignment='center', horizontalalignment='right')
+        
         ax.axhline(y= 4600, color="red", linestyle="-.")
         ax.text(0, 4600, "SetPoint de Vel. ", color="red", fontsize=10, verticalalignment='bottom', horizontalalignment='left')
-        ax.text(0, 4600, "4600  ", color="red", fontsize=10, verticalalignment='center', horizontalalignment='right')
+        
         ax.set_xlabel('Tiempo (seg)')
+        ax.xaxis.set_minor_formatter(ticker.FormatStrFormatter('% .0f'))
+        ax.yaxis.set_minor_formatter(ticker.FormatStrFormatter('% .0f'))
         ax.set_ylabel('Valor de velocidad de la Turbina (rpm)')
         ax.set_title('Velocidad de la Turbina en tiempo real (rpm)')
 
@@ -198,11 +200,12 @@ try:
             return line,
 
         def update(frame):
-            #x_data.append(frame)
+            
             x_data.append(base_Tiempo())
             y_data.append(leer_entrada())
+            
             line.set_data(x_data, y_data)
-            #ax.set_xlim(max(0, frame-60), frame+1)  # Ventana deslizante de 60s
+            
             return line,
         
         ani = FuncAnimation(fig, update, init_func=init, interval=1000, blit=False, repeat=False)
