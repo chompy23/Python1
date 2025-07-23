@@ -6,7 +6,7 @@ import time
 import pyqtgraph as pg
 
 
-# Configuración inicial
+"""# Configuración inicial
 fig, ax = plt.subplots()
 x = np.linspace(0, 2*np.pi, 1000)
 line, = ax.plot(x, np.sin(x))  # Señal inicial
@@ -30,7 +30,7 @@ thread.start()
 
 # Iniciar animación
 ani = animation.FuncAnimation(fig, update, interval=50, blit=True)
-plt.show()
+plt.show()"""
 
 
 """Solución con PyQtGraph (Más eficiente para tiempo real)
@@ -40,52 +40,53 @@ PyQtGraph es ideal para visualizaciones de alta frecuencia (como audio o señale
 
 
 import numpy as np
-from PyQt5 import QApplication
+from PyQt5.QtWidgets import QApplication
 from threading import Thread
 import time
+try:
+    # Configuración de la ventana
+    app = QApplication([])
+    win = pg.GraphicsLayoutWidget()
+    plot = win.addPlot()
+    curve = plot.plot(pen='y')
 
-# Configuración de la ventana
-app = QApplication([])
-win = pg.GraphicsLayoutWidget()
-plot = win.addPlot()
-curve = plot.plot(pen='y')
+    # Datos iniciales
+    x = np.linspace(0, 2*np.pi, 1000)
+    y = np.sin(x)
 
-# Datos iniciales
-x = np.linspace(0, 2*np.pi, 1000)
-y = np.sin(x)
+    # Función para actualizar la gráfica
+    def update():
+        global y
+        y = np.sin(x + time.time())  # Señal dinámica
+        curve.setData(y)
 
-# Función para actualizar la gráfica
-def update():
-    global y
-    y = np.sin(x + time.time())  # Señal dinámica
-    curve.setData(y)
+    # Función en segundo plano
+    def background_task():
+        while True:
+            print("Tarea en segundo plano ejecutándose...")
+            time.sleep(1)
 
-# Función en segundo plano
-def background_task():
-    while True:
-        print("Tarea en segundo plano ejecutándose...")
-        time.sleep(1)
+    # Iniciar hilo
+    thread = Thread(target=background_task)
+    thread.daemon = True
+    thread.start()
 
-# Iniciar hilo
-thread = Thread(target=background_task)
-thread.daemon = True
-thread.start()
+    # Timer para actualizar la gráfica
+    timer = pg.QtCore.QTimer()
+    timer.timeout.connect(update)
+    timer.start(50)  # Actualizar cada 50 ms
 
-# Timer para actualizar la gráfica
-timer = pg.QtCore.QTimer()
-timer.timeout.connect(update)
-timer.start(50)  # Actualizar cada 50 ms
-
-win.show()
-app.exec_()
-
+    win.show()
+    app.exec_()
+except KeyboardInterrupt as e:
+    print(f"Final de la aplicacion pro el usuario: {e}")
 
 """Solución con audio en tiempo real (PyAudio + matplotlib)
 
 Si quieres visualizar audio como un osciloscopio:"""
 
 
-import pyaudio
+"""import pyaudio
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -116,4 +117,4 @@ plt.show()
 # Cerrar stream al terminar
 stream.stop_stream()
 stream.close()
-p.terminate()
+p.terminate()"""
