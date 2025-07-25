@@ -116,8 +116,8 @@ class Turbina():
                                     print("Se lleva  la turbina a velocidad de autosustentacion\n")
                                     while self.ent.entradas.get("sensor_velTur") < 478 and self.inputs_criticas2:
                                         baseDeTiempo.sleep(1)
-                                        self.ent.entradas["sensor_velTur"] = self.ent.entradas.get("sensor_velTur") 
-                                        + 25.0 - self.friccion  # rpm
+                                        self.ent.entradas["sensor_velTur"] = (self.ent.entradas.get("sensor_velTur") 
+                                        + 25.0 - self.friccion)  # rpm
                                         print(round(self.ent.entradas.get("sensor_velTur") , 2))
                                 else:
                                     self.sal.salidas["juntaNeumat"] = False
@@ -178,8 +178,8 @@ class Turbina():
                         baseDeTiempo.sleep(1)
                         if self.ent.entradas["sp_VComb"] == 25.0:
                             if self.ent.entradas.get("sensor_velTur") < 2750 :
-                                self.ent.entradas["sensor_velTur"] = self.ent.entradas.get("sensor_velTur") + 38.0 
-                                - self.friccion - self.carga_compresor
+                                self.ent.entradas["sensor_velTur"] = (self.ent.entradas.get("sensor_velTur") + 38.0 
+                                - self.friccion - self.carga_compresor)
                                 print(round(self.ent.entradas.get("sensor_velTur") , 2))
                 print("""PASO 4:   
                         Al superar las 2750 rpm, se habilita el control externo en modo 
@@ -275,13 +275,15 @@ class Turbina():
                 baseDeTiempo.sleep(1)
                 if self.ent.entradas.get("sensor_velTur") < 2500:
                     break    
-                self.ent.entradas["sensor_velTur"] = self.ent.entradas.get("sensor_velTur") - self.friccion - self.carga_compresor 
+                self.ent.entradas["sensor_velTur"] = (self.ent.entradas.get("sensor_velTur") 
+                                                      - self.friccion - self.carga_compresor) 
                 print(round(self.ent.entradas.get("sensor_velTur") , 2))
         print("Frenamos la Turbina")
         self.sal.salidas["frenos"] = True
         while True:
             baseDeTiempo.sleep(1)   
-            self.ent.entradas["sensor_velTur"] = self.ent.entradas.get("sensor_velTur") - self.friccion - self.carga_compresor - 50.0
+            self.ent.entradas["sensor_velTur"] = (self.ent.entradas.get("sensor_velTur") 
+                                                  - self.friccion - self.carga_compresor - 50.0)
             if self.ent.entradas.get("sensor_velTur") <= 0.0:
                 self.ent.entradas["sensor_velTur"] = 0.0
                 self.sal.salidas["frenos"] = False
@@ -316,8 +318,8 @@ class Turbina():
         self.sal.salidas["frenos"] = True    
         while True:
             baseDeTiempo.sleep(1)   
-            self.ent.entradas["sensor_velTur"] = self.ent.entradas.get("sensor_velTur") 
-            - self.friccion - self.carga_compresor - 150.0
+            self.ent.entradas["sensor_velTur"] = (self.ent.entradas.get("sensor_velTur") 
+                                                  - self.friccion - self.carga_compresor - 150.0)
             if self.ent.entradas.get("sensor_velTur") <= 0.0:
                 self.ent.entradas["sensor_velTur"] = 0.0
                 self.sal.salidas["frenos"] = False
@@ -478,8 +480,6 @@ class SalidasPlc():
             "valvula_comb": 0.0
             }
             
-        
-        
     def __str__(self):
         for llave, valor in self.salidas.items():
             print(f" *Salida : {llave}          *Estado :   {valor}")
