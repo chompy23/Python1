@@ -147,8 +147,8 @@ class Turbina():
                         control de velocidad en MANUAL, abriendo la válvula de control de combustible un 10%, el cual 
                         comenzará a ingresar a través de 2 quemadores tangenciales.   
                         Con dos sensores de llama, se verifica que ambos quemadores estén encendidos para ir al siguiente 
-                        paso\n """)
-                    print("Con la Turbina en vel. de autosustentacion encendemos los quemadores  :  paso2\n")
+                        paso""")
+                    print("Con la Turbina en vel. de autosustentacion encendemos los quemadores  :  paso2")
                     print("Accionamos los Chisperos\n")
                     self.sal.salidas["ignitor1"] = True
                     self.sal.salidas["ignitor2"] = True
