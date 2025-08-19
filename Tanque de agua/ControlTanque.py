@@ -18,11 +18,11 @@ class Tanque():
         self.anteriores = []
 
         # ----------------- Configuramos el cliente Modbus -----------------
-        self.cliente = ModbusTcpClient(self.ip)
+        self.cliente = ModbusTcpClient(self.ip,port=502)
         self.cliente.connect()
 
     def leerNivel(self):
-        lectura = self.cliente.read_holding_registers(self.dirNnivel,1,self.dispositivo)
+        lectura = self.cliente.read_holding_registers(address=self.dirNnivel,count=1)
         # El tanque en Factory IO representa 1000 como 10.00v, correspondiente a 300 cm de altura
         # Escalamos
         salida = escalar_valor(lectura.registers[0],0,1000,0,300)
@@ -34,7 +34,7 @@ class Tanque():
         #Escalamos
         valvulaEscalada = int(escalar_valor(self.Valvula,0,100,0,1000))
         #ahora si enviamos el comando
-        self.cliente.write_register(self.dirValvula,valvulaEscalada,self.dispositivo)
+        self.cliente.write_register(address=self.dirValvula,value=valvulaEscalada)
 
     def PID(self,input, Man_Auto = False, SetpointMan = 0.0, SetpointAuto = 0.0):
                 """
@@ -70,9 +70,9 @@ class Tanque():
                     E_accu = [(SP - elem) for elem in self.anteriores[-20:]]
                     self.error_accu = E_accu
                     
-                    kP = 6.05
-                    kI = 1.35
-                    kD = 0.7
+                    kP = 1.05
+                    kI = 4.35
+                    kD = 0.2
 
                     #La acción proporcional es el error multiplicado por una constante
                     aP = self.error * kP
@@ -103,7 +103,8 @@ class Tanque():
                 self.comandarValvula()
 
 TK1 = Tanque(
-     ip = "127.0.0.1",
+     #ip = "127.0.0.1",
+     ip = "192.168.100.4",
      dispositivo=1,
      dirNivel=0,
      dirValvula=5
